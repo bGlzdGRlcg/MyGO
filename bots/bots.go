@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	Bot_ID mastodon.ID
+	Bot_ID   mastodon.ID
+	Bot_Name string
 )
 
 func Start() {
@@ -26,6 +27,7 @@ func Start() {
 		log.Fatal(err)
 	}
 	Bot_ID = bot.ID
+	Bot_Name = bot.Username
 
 	ws_client := c.NewWSClient()
 

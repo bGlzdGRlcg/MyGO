@@ -20,7 +20,7 @@ func Reply(client *mastodon.Client, status *mastodon.Status) {
 	str := Formatstrs(status.Content)
 	if status.Account.ID == Bot_ID {
 		return
-	} else if len(str) == 1 || str[1] == "mygo" || str[1] == "/mygo" {
+	} else if (str[0] == "@"+Bot_Name) && (len(str) == 1 || (str[1] == "mygo" || str[1] == "/mygo")) {
 		irand, _ := rand.Int(rand.Reader, big.NewInt(int64(len(MyGO_str))))
 		rpy := "@" + status.Account.Username + " " + MyGO_str[irand.Int64()]
 		ms.PostdTootr(client, status.ID, rpy, status.Visibility)
