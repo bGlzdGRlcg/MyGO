@@ -4,7 +4,7 @@ import (
 	"bGlzdGRlcg/MyGO/ms"
 	"context"
 	"fmt"
-	"log"
+	"time"
 
 	"github.com/mattn/go-mastodon"
 )
@@ -22,9 +22,13 @@ func Start() {
 		AccessToken:  ms.Token,
 	})
 
+	if err := loadUserMap(); err != nil {
+		fmt.Println(err)
+	}
+
 	bot, err := c.GetAccountCurrentUser(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("%v", err)
 	}
 	Bot_ID = bot.ID
 	Bot_Name = bot.Username
@@ -35,12 +39,12 @@ func Start() {
 
 	events, err := ws_client.StreamingWSUser(ctx)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("%v", err)
 	}
 
 	tag_events, err := ws_client.StreamingWSHashtag(ctx, "MyGO", true)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("%v", err)
 	}
 
 	go func() {
@@ -71,6 +75,37 @@ func Start() {
 			case *mastodon.ErrorEvent:
 				fmt.Printf("发生错误: %v\n", e.Err)
 			}
+		}
+	}()
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		for range ticker.C {
+			for _, user := range User_map {
+				if user.RSSFeeds != nil {
+					for _, watcher := range user.RSSFeeds {
+						items, err := watcher.CheckNew()
+						if err != nil {
+							fmt.Printf("Error checking RSS feed: %v\n", err)
+							continue
+						}
+						m_user, err := ms.GetAcc(c, user.Userid)
+						if err != nil {
+							fmt.Printf("Error getting Mastodon user: %v\n", err)
+							continue
+						}
+						for _, item := range items {
+							content := fmt.Sprintf("@%s \n📰 %s\n\n %s\n\nLink: %s",
+								m_user.Username,
+								item.Title,
+								Formatctx(item.Description),
+								item.Link)
+							ms.PostdToot(c, content, "direct")
+						}
+					}
+				}
+			}
+			saveUserMap()
 		}
 	}()
 
