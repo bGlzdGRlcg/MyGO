@@ -21,20 +21,9 @@ func Reply(client *mastodon.Client, status *mastodon.Status) {
 	if status.Account.ID == Bot_ID {
 		return
 	} else if (str[0] == "@"+Bot_Name) && (len(str) == 1 || (str[1] == "mygo" || str[1] == "/mygo")) {
-		irand, _ := rand.Int(rand.Reader, big.NewInt(int64(len(MyGO_str))))
-		rpy := "@" + status.Account.Username + " " + MyGO_str[irand.Int64()]
-		ms.PostdTootr(client, status.ID, rpy, status.Visibility)
+		MyGO_rpy(client, status)
 	} else {
-		o_str := status.Account.Username + ": " + Formatstr(status.Content)
-		rpy := "@" + status.Account.Username + " "
-		if status.InReplyToID != nil {
-			t_sts, _ := client.GetStatus(context.Background(), mastodon.ID(status.InReplyToID.(string)))
-			t_str := Formatstr(t_sts.Content)
-			o_str += "\n" + "Reply to " + t_sts.Account.Username + ": " + t_str
-		}
-		//fmt.Println(o_str)
-		rpy += Gemini_rpy(o_str)
-		ms.PostdTootr(client, status.ID, rpy, status.Visibility)
+		Gemini_rpy(client, status)
 	}
 }
 
@@ -88,7 +77,7 @@ func Formatstrs(str string) []string {
 	return lines
 }
 
-func Gemini_rpy(str string) string {
+func Gemini(str, pt string) string {
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
 	if err != nil {
@@ -97,7 +86,7 @@ func Gemini_rpy(str string) string {
 	defer client.Close()
 	model := client.GenerativeModel("gemini-2.0-flash-lite")
 	model.SetTemperature(0.9)
-	model.SystemInstruction = genai.NewUserContent(genai.Text(prompt))
+	model.SystemInstruction = genai.NewUserContent(genai.Text(pt))
 	resp, err := model.GenerateContent(ctx, genai.Text(str))
 	if err != nil {
 		log.Fatal(err)
@@ -112,4 +101,23 @@ func Gemini_rpy(str string) string {
 	}
 	//fmt.Println(respStr)
 	return respStr
+}
+
+func Gemini_rpy(client *mastodon.Client, status *mastodon.Status) {
+	o_str := status.Account.Username + ": " + Formatstr(status.Content)
+	rpy := "@" + status.Account.Username + " "
+	if status.InReplyToID != nil {
+		t_sts, _ := client.GetStatus(context.Background(), mastodon.ID(status.InReplyToID.(string)))
+		t_str := Formatstr(t_sts.Content)
+		o_str += "\n" + "Reply to " + t_sts.Account.Username + ": " + t_str
+	}
+	//fmt.Println(o_str)
+	rpy += Gemini(o_str, prompt)
+	ms.PostdTootr(client, status.ID, rpy, status.Visibility)
+}
+
+func MyGO_rpy(client *mastodon.Client, status *mastodon.Status) {
+	irand, _ := rand.Int(rand.Reader, big.NewInt(int64(len(MyGO_str))))
+	rpy := "@" + status.Account.Username + " " + MyGO_str[irand.Int64()]
+	ms.PostdTootr(client, status.ID, rpy, status.Visibility)
 }
