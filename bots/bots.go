@@ -38,7 +38,7 @@ func Start() {
 		log.Fatal(err)
 	}
 
-	tag_events, err := ws_client.StreamingWSHashtag(ctx, "mygo", true)
+	tag_events, err := ws_client.StreamingWSHashtag(ctx, "MyGO", true)
 	if err != nil {
 		log.Fatal(err)
 	}

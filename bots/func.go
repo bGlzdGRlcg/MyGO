@@ -20,7 +20,7 @@ func Reply(client *mastodon.Client, status *mastodon.Status) {
 	str := Formatstrs(status.Content)
 	if status.Account.ID == Bot_ID {
 		return
-	} else if (str[0] == "@"+Bot_Name) && (len(str) == 1 || (str[1] == "mygo" || str[1] == "/mygo")) {
+	} else if (str[0] == "@"+Bot_Name) && (len(str) == 1 || (str[1] == "MyGO" || str[1] == "mygo" || str[1] == "/mygo" || str[1] == "/MyGO")) {
 		MyGO_rpy(client, status)
 	} else {
 		Gemini_rpy(client, status)
