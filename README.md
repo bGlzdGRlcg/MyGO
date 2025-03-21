@@ -3,6 +3,8 @@
 > [!WARNING]
 > It's MyGO🥒🥒🥒🥒🥒
 
+> 我从来没觉得写代码开心过
+
 ## 开始之前
 
 在 `MS_HOST/settings/applications` (MS_HOST 为你的`Mastodon`地址) 创建一个应用
