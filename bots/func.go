@@ -188,7 +188,7 @@ func Sub(client *mastodon.Client, status *mastodon.Status, str []string) {
 	} else if len(ss) > 2 {
 		ms.PostdTootr(client, status.ID, "@"+status.Account.Username+" 塞...不下的...", "direct")
 	} else if len(ss) == 2 {
-		_, err := http.Get(ss[2])
+		_, err := http.Get(ss[1])
 		if err != nil {
 			fmt.Printf("Error checking URL: %v", err)
 			ms.PostdTootr(client, status.ID, "@"+status.Account.Username+" 你这链接有问题啊", "direct")
@@ -197,7 +197,7 @@ func Sub(client *mastodon.Client, status *mastodon.Status, str []string) {
 		if User_map[string(status.Account.ID)] == nil {
 			User_map[string(status.Account.ID)] = &User{Userid: string(status.Account.ID)}
 		}
-		User_map[string(status.Account.ID)].AddRSSFeed(ss[2])
+		User_map[string(status.Account.ID)].AddRSSFeed(ss[1])
 		saveUserMap()
 		ms.PostdTootr(client, status.ID, "@"+status.Account.Username+" 订阅成功", "direct")
 		return
